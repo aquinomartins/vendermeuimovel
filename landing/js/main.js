@@ -294,6 +294,8 @@ function setupModal() {
   const openBtn = qs('#openFinanceModal');
   const closeBtn = qs('#closeFinanceModal');
 
+  if (!modal || !closeBtn) return;
+
   function openModal() {
     modalLastFocus = document.activeElement;
     modal.hidden = false;
@@ -302,10 +304,13 @@ function setupModal() {
 
   function closeModal() {
     modal.hidden = true;
-    if (modalLastFocus) modalLastFocus.focus();
+    if (modalLastFocus instanceof HTMLElement) modalLastFocus.focus();
   }
 
-  openBtn.addEventListener('click', openModal);
+  if (openBtn) {
+    openBtn.addEventListener('click', openModal);
+  }
+
   closeBtn.addEventListener('click', closeModal);
 
   modal.addEventListener('click', (event) => {
