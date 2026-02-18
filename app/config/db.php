@@ -50,3 +50,19 @@ function db(): PDO
 
     return $pdo;
 }
+
+function table_exists(string $table): bool
+{
+    static $cache = [];
+
+    if (isset($cache[$table])) {
+        return $cache[$table];
+    }
+
+    $sql = 'SELECT 1 FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = :table LIMIT 1';
+    $stmt = db()->prepare($sql);
+    $stmt->execute(['table' => $table]);
+
+    $cache[$table] = (bool) $stmt->fetchColumn();
+    return $cache[$table];
+}

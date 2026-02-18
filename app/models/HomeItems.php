@@ -13,6 +13,10 @@ final class HomeItems
 
     public static function all(?string $group = null): array
     {
+        if (!table_exists('home_items')) {
+            return [];
+        }
+
         if ($group === null) {
             return db()->query('SELECT * FROM home_items ORDER BY group_key, sort_order, id')->fetchAll();
         }
@@ -24,6 +28,10 @@ final class HomeItems
 
     public static function create(array $data): void
     {
+        if (!table_exists('home_items')) {
+            return;
+        }
+
         $sql = 'INSERT INTO home_items (group_key,title,`text`,image_url,link_url,badge,price,sort_order,is_visible,updated_at)
                 VALUES (:group_key,:title,:text,:image_url,:link_url,:badge,:price,:sort_order,:is_visible,NOW())';
         db()->prepare($sql)->execute($data);
@@ -31,6 +39,10 @@ final class HomeItems
 
     public static function update(int $id, array $data): void
     {
+        if (!table_exists('home_items')) {
+            return;
+        }
+
         $data['id'] = $id;
         $sql = 'UPDATE home_items SET group_key=:group_key,title=:title,`text`=:text,image_url=:image_url,link_url=:link_url,badge=:badge,price=:price,sort_order=:sort_order,is_visible=:is_visible,updated_at=NOW() WHERE id=:id';
         db()->prepare($sql)->execute($data);
@@ -38,6 +50,10 @@ final class HomeItems
 
     public static function delete(int $id): void
     {
+        if (!table_exists('home_items')) {
+            return;
+        }
+
         db()->prepare('DELETE FROM home_items WHERE id = :id')->execute(['id' => $id]);
     }
 }
