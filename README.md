@@ -1,22 +1,21 @@
-# VenderMeuImovel - Landing + Admin sem framework
+# Aurora Imóveis (PHP + MySQL)
 
-Projeto em PHP + MySQL + JS/CSS/HTML, sem framework, com área administrativa para editar o conteúdo da landing.
+Home pública baseada no layout de `site1/index.html`, com conteúdo dinâmico via MySQL e painel Admin para edição.
 
 ## Estrutura
 
-- `public/` frontend público (`index.php`, assets e uploads)
-- `app/config/db.php` conexão PDO e leitura de `.env`
-- `app/helpers/` autenticação, CSRF, sanitização, upload
-- `app/models/` acesso a dados (`Settings`, `Pages`, `Sections`, `Leads`)
-- `app/views/` view da home e partials
-- `admin/` login, dashboard e CRUDs
-- `scripts/schema.sql` schema MySQL
-- `scripts/seed.php` seed inicial
+- `public/index.php`: Home pública (layout Aurora)
+- `public/css/styles.css`: CSS base copiado do `site1`
+- `public/js/main.js`: carrega dados em `/api/home-data.php`
+- `public/uploads/`: imagens
+- `api/home-data.php`: JSON para chips, métricas, cards, depoimentos e pins
+- `admin/`: painel para login e edição de conteúdo
+- `scripts/schema.sql`: schema do banco
+- `scripts/seed.php`: seed inicial
 
 ## Configuração
 
-1. Requisitos: PHP 8.1+ e MySQL 8+
-2. Crie um arquivo `.env` na raiz:
+1. Configure credenciais MySQL via `.env` (ou variáveis de ambiente):
 
 ```ini
 DB_HOST=127.0.0.1
@@ -24,44 +23,30 @@ DB_PORT=3306
 DB_NAME=vendermeuimovel
 DB_USER=root
 DB_PASS=
-
-ADMIN_NAME=Administrador
-ADMIN_EMAIL=admin@local.test
-ADMIN_PASSWORD=admin123
 ```
 
-3. Crie o banco no MySQL:
-
-```sql
-CREATE DATABASE vendermeuimovel CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-```
-
-4. Rode a seed (cria tabelas + conteúdo inicial):
+2. Execute seed:
 
 ```bash
 php scripts/seed.php
 ```
 
-5. Suba o servidor embutido apontando para `public/`:
+3. Rode o servidor PHP apontando para `public/`:
 
 ```bash
-php -S localhost:8000 -t public
+php -S 0.0.0.0:8080 -t public
 ```
 
-## Acesso
+## Acesso Admin
 
-- Site: `http://localhost:8000`
-- Admin login: `http://localhost:8000/admin/login.php`
-- Credenciais padrão: definidas em `.env` (`ADMIN_EMAIL` / `ADMIN_PASSWORD`)
+- URL: `/admin/login.php`
+- Usuário padrão: `admin@aurora.local`
+- Senha padrão: `123456`
 
-## Funcionalidades de Admin
+## Segurança implementada
 
-- Login seguro com `password_hash` / `password_verify`
-- Proteção CSRF em formulários POST
-- Dashboard
-- CRUD de settings (`key/value`)
-- CRUD de páginas
-- CRUD de seções e items
-- Upload de mídia para `public/uploads`
-- Leads: listagem e exportação CSV
-
+- `password_hash` e `password_verify`
+- `session_regenerate_id` no login
+- CSRF em todos os POST do admin
+- Prepared statements (PDO)
+- Upload com validação MIME real + nome por hash SHA-256

@@ -4,80 +4,53 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../app/config/db.php';
 
-$sql = file_get_contents(__DIR__ . '/schema.sql');
-db()->exec($sql ?: '');
+$pdo = db();
+$schema = file_get_contents(__DIR__ . '/schema.sql');
+$pdo->exec($schema ?: '');
 
-$adminName = env_value('ADMIN_NAME', 'Administrador');
-$adminEmail = env_value('ADMIN_EMAIL', 'admin@local.test');
-$adminPass = env_value('ADMIN_PASSWORD', 'admin123');
-
-$stmt = db()->prepare('INSERT INTO users (name,email,password_hash,role,created_at) VALUES (:name,:email,:password_hash,:role,NOW()) ON DUPLICATE KEY UPDATE name=VALUES(name), password_hash=VALUES(password_hash), role=VALUES(role)');
-$stmt->execute([
-    'name' => $adminName,
-    'email' => $adminEmail,
-    'password_hash' => password_hash($adminPass, PASSWORD_DEFAULT),
-    'role' => 'admin',
-]);
-
-$pageStmt = db()->prepare('INSERT INTO pages (slug,title,meta_title,meta_description,is_published,updated_at) VALUES (:slug,:title,:meta_title,:meta_description,1,NOW()) ON DUPLICATE KEY UPDATE title=VALUES(title), meta_title=VALUES(meta_title), meta_description=VALUES(meta_description), is_published=1, updated_at=NOW()');
-$pageStmt->execute([
-    'slug' => 'home',
-    'title' => 'Aurora Imóveis',
-    'meta_title' => 'Aurora Imóveis | Seu próximo endereço começa aqui',
-    'meta_description' => 'Atendimento consultivo para compra, venda e investimento.',
-]);
-
-$pageId = (int) db()->query("SELECT id FROM pages WHERE slug='home' LIMIT 1")->fetchColumn();
-
-db()->prepare('DELETE FROM sections WHERE page_id = :page_id')->execute(['page_id' => $pageId]);
-
-$sectionTypes = ['hero', 'features', 'testimonials', 'faq', 'cta', 'footer'];
-$sectionInsert = db()->prepare('INSERT INTO sections (page_id,type,title,subtitle,sort_order,is_visible,updated_at) VALUES (:page_id,:type,:title,:subtitle,:sort_order,1,NOW())');
-$itemInsert = db()->prepare('INSERT INTO section_items (section_id,title,`text`,image_url,link_url,sort_order,is_visible,updated_at) VALUES (:section_id,:title,:text,:image_url,:link_url,:sort_order,1,NOW())');
-
-$seedContent = [
-    'hero' => [['title' => 'Descubra seu novo lar', 'text' => 'Curadoria local e atendimento próximo para compra e venda.', 'image_url' => '', 'link_url' => '#lead-form']],
-    'features' => [['title' => 'Atendimento consultivo', 'text' => 'Equipe especialista no mercado local.', 'image_url' => '', 'link_url' => ''], ['title' => 'Negociação segura', 'text' => 'Processos transparentes do início ao fim.', 'image_url' => '', 'link_url' => '']],
-    'testimonials' => [['title' => 'Ana e Carlos', 'text' => 'Encontramos o imóvel ideal com suporte total.', 'image_url' => '', 'link_url' => '']],
-    'faq' => [['title' => 'Quais documentos preciso?', 'text' => 'Depende da negociação; nossa equipe orienta todo o processo.', 'image_url' => '', 'link_url' => '']],
-    'cta' => [['title' => 'Quer vender seu imóvel?', 'text' => 'Anuncie com quem entende de performance imobiliária.', 'image_url' => '', 'link_url' => '#lead-form']],
-    'footer' => [['title' => 'Contato', 'text' => 'Fale pelo WhatsApp e redes sociais.', 'image_url' => '', 'link_url' => '']],
-];
-
-foreach ($sectionTypes as $index => $type) {
-    $sectionInsert->execute([
-        'page_id' => $pageId,
-        'type' => $type,
-        'title' => ucfirst($type),
-        'subtitle' => 'Seção editável no admin',
-        'sort_order' => $index,
-    ]);
-    $sectionId = (int) db()->lastInsertId();
-
-    foreach ($seedContent[$type] as $itemIndex => $item) {
-        $itemInsert->execute([
-            'section_id' => $sectionId,
-            'title' => $item['title'],
-            'text' => $item['text'],
-            'image_url' => $item['image_url'],
-            'link_url' => $item['link_url'],
-            'sort_order' => $itemIndex,
-        ]);
-    }
-}
+$adminEmail = getenv('ADMIN_EMAIL') ?: 'admin@aurora.local';
+$adminPass = getenv('ADMIN_PASSWORD') ?: '123456';
+$hash = password_hash($adminPass, PASSWORD_DEFAULT);
+$pdo->prepare('INSERT INTO users (name,email,password_hash,role) VALUES ("Administrador",:email,:password_hash,"admin") ON DUPLICATE KEY UPDATE password_hash = VALUES(password_hash)')
+    ->execute(['email' => $adminEmail, 'password_hash' => $hash]);
 
 $settings = [
-    'site_name' => 'Aurora Imóveis',
-    'whatsapp' => 'https://wa.me/5511999999999',
-    'logo' => '/assets/placeholders.svg',
-    'social_instagram' => 'https://instagram.com',
-    'social_facebook' => 'https://facebook.com',
-    'footer_text' => 'Aurora Imóveis conecta você ao imóvel ideal.',
+    'site_title' => 'Aurora Imóveis | Seu próximo endereço começa aqui',
+    'meta_description' => 'Aurora Imóveis conecta você ao imóvel ideal para morar, investir ou vender com segurança.',
+    'brand_name' => 'Aurora Imóveis',
+    'whatsapp_url' => 'https://wa.me/5511999999999',
 ];
-
-$settingStmt = db()->prepare('INSERT INTO site_settings (`key`,`value`,updated_at) VALUES (:key,:value,NOW()) ON DUPLICATE KEY UPDATE `value`=VALUES(`value`), updated_at=NOW()');
-foreach ($settings as $key => $value) {
-    $settingStmt->execute(['key' => $key, 'value' => $value]);
+$stmtSetting = $pdo->prepare('INSERT INTO site_settings (`key`,`value`) VALUES (:key,:value) ON DUPLICATE KEY UPDATE `value`=VALUES(`value`)');
+foreach ($settings as $k => $v) {
+    $stmtSetting->execute(['key' => $k, 'value' => $v]);
 }
 
-echo "Seed finalizado. Admin: {$adminEmail} / {$adminPass}" . PHP_EOL;
+$sections = [
+    ['hero', 'Atendimento consultivo para compra, venda e investimento', 'Descubra seu novo lar ou o investimento certo para crescer com segurança.', 'Na Aurora Imóveis, você encontra curadoria local, negociação transparente e suporte do primeiro clique até a assinatura.', '', '', '', 1, 1],
+    ['finance', 'Consórcio e financiamento sem complicação', '', 'Análise consultiva, comparação de condições e acompanhamento até a assinatura do contrato.', '', 'Saiba mais', '#consorcio', 1, 2],
+    ['sell_cta', 'Venda seu imóvel com estratégia', '', 'Posicionamento profissional, fotos que valorizam e divulgação multicanal para acelerar sua negociação.', '/uploads/placeholders.svg', 'Quero anunciar', 'https://wa.me/5511999999999', 1, 3],
+    ['work_cta', 'Trabalhe conosco', '', 'Buscamos talentos em atendimento, comercial e marketing para construir experiências imobiliárias excepcionais.', '/uploads/placeholders.svg', 'Quero me candidatar', '#contato', 1, 4],
+];
+$stmtSection = $pdo->prepare('INSERT INTO home_sections (section_key,title,subtitle,body,image_url,button_label,button_url,is_visible,sort_order) VALUES (?,?,?,?,?,?,?,?,?) ON DUPLICATE KEY UPDATE title=VALUES(title),subtitle=VALUES(subtitle),body=VALUES(body),image_url=VALUES(image_url),button_label=VALUES(button_label),button_url=VALUES(button_url),is_visible=VALUES(is_visible),sort_order=VALUES(sort_order)');
+foreach ($sections as $s) {
+    $stmtSection->execute($s);
+}
+
+$pdo->exec('DELETE FROM home_items');
+$items = [
+    ['typeChips','Apartamento','','','','','','1',1],['typeChips','Casa','','','','','','2',1],['typeChips','Cobertura','','','','','','3',1],
+    ['metrics','12000','imóveis em carteira ativa','','','+','',1,1],['metrics','500000','clientes atendidos em todo o DF','','','+','',2,1],['metrics','18','de experiência no mercado imobiliário','','','',' anos',3,1],
+    ['readyCards','Residencial Horizonte','Águas Claras · Brasília · 88m² · 3 quartos · 2 vagas','','#','Apartamento','R$ 780.000',1,1],
+    ['readyCards','Casa Jardim Lumière','Lago Sul · Brasília · 240m² · 4 quartos · 3 vagas','','#','Casa','R$ 2.490.000',2,1],
+    ['launchCards','Aurora Park Residence','Noroeste, Brasília · 67 a 118 m² · 2 e 3 quartos','','#','','',1,1],
+    ['launchCards','Viva Eixo Smart Homes','Asa Norte, Brasília · 34 a 56 m² · Studios e 1 quarto','','#','','',2,1],
+    ['regionChips','Asa Sul','','','','','','1',1],['regionChips','Asa Norte','','','','','','2',1],['regionChips','Águas Claras','','','','','','3',1],
+    ['testimonials','Mariana Costa','A equipe da Aurora foi precisa em cada etapa da compra.','','','','',1,1],['testimonials','Henrique Prado','Excelente suporte na venda do meu imóvel.','','','','',2,1],
+    ['pinsList','📍 4 imóveis disponíveis na Asa Sul','','','','','','1',1],['pinsList','📍 3 oportunidades de lançamento em Águas Claras','','','','','','2',1],
+];
+$stmtItem = $pdo->prepare('INSERT INTO home_items (group_key,title,`text`,image_url,link_url,badge,price,sort_order,is_visible) VALUES (?,?,?,?,?,?,?,?,?)');
+foreach ($items as $item) {
+    $stmtItem->execute($item);
+}
+
+echo "Seed concluído. Admin: {$adminEmail} / {$adminPass}\n";
