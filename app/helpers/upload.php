@@ -2,25 +2,33 @@
 
 declare(strict_types=1);
 
-function handle_upload(string $fieldName): ?string
+function handle_upload(string $field): ?string
 {
-    if (empty($_FILES[$fieldName]['name'])) {
+    if (empty($_FILES[$field]['name'])) {
         return null;
     }
 
-    $file = $_FILES[$fieldName];
+    $file = $_FILES[$field];
     if (($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
-        throw new RuntimeException('Falha no upload.');
+        throw new RuntimeException('Erro no upload.');
     }
 
-    $allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml'];
-    $mime = mime_content_type($file['tmp_name']);
-    if (!in_array($mime, $allowed, true)) {
-        throw new RuntimeException('Tipo de arquivo não permitido.');
+    $finfo = new finfo(FILEINFO_MIME_TYPE);
+    $mime = $finfo->file($file['tmp_name']) ?: '';
+    $allowed = [
+        'image/jpeg' => 'jpg',
+        'image/png' => 'png',
+        'image/webp' => 'webp',
+        'image/gif' => 'gif',
+        'image/svg+xml' => 'svg',
+    ];
+
+    if (!isset($allowed[$mime])) {
+        throw new RuntimeException('Formato de imagem não permitido.');
     }
 
-    $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
-    $filename = uniqid('media_', true) . '.' . strtolower($ext);
+    $hash = hash_file('sha256', $file['tmp_name']);
+    $filename = $hash . '.' . $allowed[$mime];
     $targetDir = dirname(__DIR__, 2) . '/public/uploads';
 
     if (!is_dir($targetDir)) {
@@ -29,7 +37,7 @@ function handle_upload(string $fieldName): ?string
 
     $target = $targetDir . '/' . $filename;
     if (!move_uploaded_file($file['tmp_name'], $target)) {
-        throw new RuntimeException('Não foi possível mover o arquivo.');
+        throw new RuntimeException('Falha ao salvar arquivo.');
     }
 
     return '/uploads/' . $filename;

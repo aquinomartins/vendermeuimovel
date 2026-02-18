@@ -14,12 +14,13 @@ function ensure_session_started(): void
 function current_user(): ?array
 {
     ensure_session_started();
-    return $_SESSION['user'] ?? null;
+    return $_SESSION['auth_user'] ?? null;
 }
 
 function attempt_login(string $email, string $password): bool
 {
     ensure_session_started();
+
     $stmt = db()->prepare('SELECT id, name, email, password_hash, role FROM users WHERE email = :email LIMIT 1');
     $stmt->execute(['email' => $email]);
     $user = $stmt->fetch();
@@ -30,7 +31,7 @@ function attempt_login(string $email, string $password): bool
 
     session_regenerate_id(true);
     unset($user['password_hash']);
-    $_SESSION['user'] = $user;
+    $_SESSION['auth_user'] = $user;
 
     return true;
 }
