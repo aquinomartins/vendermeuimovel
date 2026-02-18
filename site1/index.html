@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Aurora Imóveis conecta você ao imóvel ideal para morar, investir ou vender com segurança.">
+  <title>Aurora Imóveis | Seu próximo endereço começa aqui</title>
+  <link rel="stylesheet" href="./css/styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#conteudo-principal">Pular para conteúdo principal</a>
+
+  <header class="site-header" id="topo">
+    <div class="container header-content">
+      <a href="#topo" class="logo" aria-label="Aurora Imóveis - início">Aurora Imóveis</a>
+
+      <button class="menu-toggle" id="menuToggle" aria-label="Abrir menu" aria-expanded="false" aria-controls="menuDrawer">
+        <span></span><span></span><span></span>
+      </button>
+
+      <nav class="desktop-nav" aria-label="Menu principal">
+        <a href="#prontos">Prontos</a>
+        <a href="#lancamentos">Lançamentos</a>
+        <a href="#venda">Anunciar imóvel</a>
+        <a href="#trabalhe">Trabalhe conosco</a>
+        <a href="#sobre">Sobre</a>
+        <a href="#contato">Contato</a>
+        <a href="#consorcio">Consórcio</a>
+      </nav>
+
+      <a class="btn btn-whatsapp" href="https://wa.me/5511999999999" target="_blank" rel="noopener noreferrer" aria-label="Falar no WhatsApp">Falar no WhatsApp</a>
+    </div>
+
+    <div class="menu-overlay" id="menuOverlay" hidden></div>
+    <aside class="menu-drawer" id="menuDrawer" aria-label="Menu mobile" aria-hidden="true">
+      <div class="drawer-header">
+        <strong>Menu</strong>
+        <button class="close-drawer" id="closeDrawer" aria-label="Fechar menu">×</button>
+      </div>
+      <nav class="drawer-nav" aria-label="Links mobile">
+        <a href="#prontos">Prontos</a>
+        <a href="#lancamentos">Lançamentos</a>
+        <a href="#venda">Anunciar imóvel</a>
+        <a href="#trabalhe">Trabalhe conosco</a>
+        <a href="#sobre">Sobre</a>
+        <a href="#contato">Contato</a>
+        <a href="#consorcio">Consórcio</a>
+        <a class="btn btn-whatsapp" href="https://wa.me/5511999999999" target="_blank" rel="noopener noreferrer">Falar no WhatsApp</a>
+      </nav>
+    </aside>
+  </header>
+
+  <main id="conteudo-principal">
+    <section class="hero" id="sobre">
+      <div class="container hero-grid">
+        <div>
+          <p class="eyebrow">Atendimento consultivo para compra, venda e investimento</p>
+          <h1>Descubra seu novo lar ou o investimento certo para crescer com segurança.</h1>
+          <p class="hero-subtitle">Na Aurora Imóveis, você encontra curadoria local, negociação transparente e suporte do primeiro clique até a assinatura.</p>
+        </div>
+
+        <div class="search-box" aria-label="Busca de imóveis">
+          <div class="tabs" role="tablist" aria-label="Modos de busca">
+            <button class="tab is-active" role="tab" aria-selected="true" aria-controls="panel-prontos" id="tab-prontos">Prontos</button>
+            <button class="tab" role="tab" aria-selected="false" aria-controls="panel-lancamentos" id="tab-lancamentos">Lançamentos</button>
+            <button class="tab" role="tab" aria-selected="false" aria-controls="panel-mapa" id="tab-mapa">Busca no mapa</button>
+          </div>
+
+          <div class="tab-panels">
+            <section id="panel-prontos" class="tab-panel is-active" role="tabpanel" aria-labelledby="tab-prontos">
+              <label>
+                Cidade ou bairro
+                <input type="text" id="readyLocation" placeholder="Ex.: Águas Claras">
+              </label>
+              <label>
+                Tipo de imóvel
+                <select id="readyType" aria-label="Tipo para imóveis prontos">
+                  <option value="">Selecione</option>
+                  <option>Apartamento</option>
+                  <option>Casa</option>
+                  <option>Cobertura</option>
+                  <option>Studio</option>
+                </select>
+              </label>
+              <label>
+                Faixa de preço
+                <select id="readyPrice" aria-label="Preço para imóveis prontos">
+                  <option value="">Selecione</option>
+                  <option>Até R$ 500 mil</option>
+                  <option>R$ 500 mil a R$ 1 milhão</option>
+                  <option>Acima de R$ 1 milhão</option>
+                </select>
+              </label>
+            </section>
+
+            <section id="panel-lancamentos" class="tab-panel" role="tabpanel" aria-labelledby="tab-lancamentos" hidden>
+              <label>
+                Cidade
+                <input type="text" id="launchLocation" placeholder="Ex.: Brasília">
+              </label>
+              <label>
+                Faixa de m²
+                <select id="launchArea" aria-label="Faixa de área para lançamentos">
+                  <option value="">Selecione</option>
+                  <option>35 a 60 m²</option>
+                  <option>61 a 90 m²</option>
+                  <option>91 a 140 m²</option>
+                </select>
+              </label>
+              <label>
+                Quartos
+                <select id="launchRooms" aria-label="Quantidade de quartos para lançamentos">
+                  <option value="">Selecione</option>
+                  <option>1 quarto</option>
+                  <option>2 quartos</option>
+                  <option>3 quartos</option>
+                  <option>4 quartos</option>
+                </select>
+              </label>
+            </section>
+
+            <section id="panel-mapa" class="tab-panel" role="tabpanel" aria-labelledby="tab-mapa" hidden>
+              <p class="map-tab-copy">Explore bairros, compare preços por região e visualize oportunidades em tempo real no nosso mapa interativo.</p>
+              <button class="btn btn-secondary" id="openMapFromTab" type="button" aria-label="Abrir mapa de imóveis">Abrir mapa</button>
+            </section>
+          </div>
+
+          <div class="search-actions">
+            <button id="searchBtn" class="btn" type="button" aria-label="Buscar imóveis">Buscar</button>
+            <p id="searchStatus" class="search-status" aria-live="polite">Pronto para iniciar sua busca.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="quick-filters" aria-label="Filtros rápidos por tipo de imóvel">
+      <div class="container">
+        <h2 class="section-title">Tipos mais buscados</h2>
+        <div class="chips-row" id="typeChips"></div>
+        <p class="chip-state" id="selectedTypeText">Tipo selecionado: Todos</p>
+      </div>
+    </section>
+
+    <section class="metrics">
+      <div class="container metrics-grid" id="metricsGrid"></div>
+    </section>
+
+    <section class="property-section" id="prontos">
+      <div class="container">
+        <div class="section-head">
+          <h2 class="section-title">Destaques de Prontos</h2>
+          <a href="#contato" class="text-link">Fale com um especialista</a>
+        </div>
+        <div class="cards-grid" id="readyGrid"></div>
+        <p class="disclaimer">Valores e disponibilidade sujeitos a alteração.</p>
+      </div>
+    </section>
+
+    <section class="property-section alt" id="lancamentos">
+      <div class="container">
+        <div class="section-head">
+          <h2 class="section-title">Destaques de Lançamentos</h2>
+          <button class="btn btn-secondary" type="button" id="launchCta">Ver mais lançamentos</button>
+        </div>
+        <div class="cards-grid cards-grid-launch" id="launchGrid"></div>
+      </div>
+    </section>
+
+    <section class="map-section" id="mapa">
+      <div class="container map-layout">
+        <div>
+          <h2 class="section-title">Encontre pelo mapa</h2>
+          <p>Selecione uma região no mapa e descubra imóveis próximos a escolas, parques e vias estratégicas.</p>
+          <button class="btn" type="button" id="mapSearchBtn" aria-label="Buscar imóveis no modo mapa">Buscar imóveis</button>
+        </div>
+        <div class="map-placeholder" role="img" aria-label="Prévia do mapa com marcadores de imóveis">
+          <span>🗺️ Prévia do mapa interativo</span>
+        </div>
+      </div>
+      <div class="container">
+        <ul class="pins-list" id="pinsList" aria-live="polite"></ul>
+      </div>
+    </section>
+
+    <section class="regions" aria-label="Regiões em destaque">
+      <div class="container">
+        <h2 class="section-title">Regiões em destaque</h2>
+        <div class="chips-row" id="regionChips"></div>
+      </div>
+    </section>
+
+    <section class="finance" id="consorcio">
+      <div class="container finance-card">
+        <div>
+          <h2 class="section-title">Consórcio e financiamento sem complicação</h2>
+          <ul>
+            <li>Análise consultiva com simulação em poucos minutos.</li>
+            <li>Comparação de condições para o seu perfil.</li>
+            <li>Acompanhamento até a assinatura do contrato.</li>
+          </ul>
+        </div>
+        <button class="btn" id="openFinanceModal" type="button">Saiba mais</button>
+      </div>
+    </section>
+
+    <section class="dual-cta" id="venda">
+      <div class="container dual-grid">
+        <article class="cta-card">
+          <img src="./assets/placeholders.svg" loading="lazy" alt="Ilustração de venda de imóvel">
+          <div>
+            <h2 class="section-title">Venda seu imóvel com estratégia</h2>
+            <p>Posicionamento profissional, fotos que valorizam e divulgação multicanal para acelerar sua negociação.</p>
+            <a href="https://wa.me/5511999999999" class="btn" target="_blank" rel="noopener noreferrer">Quero anunciar</a>
+          </div>
+        </article>
+
+        <article class="cta-card" id="trabalhe">
+          <img src="./assets/placeholders.svg" loading="lazy" alt="Ilustração de recrutamento imobiliário">
+          <div>
+            <h2 class="section-title">Trabalhe conosco</h2>
+            <p>Buscamos talentos em atendimento, comercial e marketing para construir experiências imobiliárias excepcionais.</p>
+            <a href="#contato" class="btn btn-secondary">Quero me candidatar</a>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="testimonials">
+      <div class="container">
+        <h2 class="section-title">Depoimentos de clientes</h2>
+        <div class="testimonial-grid" id="testimonialGrid"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer" id="contato">
+    <div class="container footer-grid">
+      <div>
+        <h3>Imóveis</h3>
+        <ul>
+          <li><a href="#prontos">Prontos</a></li>
+          <li><a href="#lancamentos">Lançamentos</a></li>
+          <li><a href="#mapa">Busca no mapa</a></li>
+          <li><a href="#venda">Anunciar imóvel</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Institucional</h3>
+        <ul>
+          <li><a href="#sobre">Sobre a Aurora</a></li>
+          <li><a href="#trabalhe">Carreiras</a></li>
+          <li><a href="#contato">Contato</a></li>
+          <li><a href="#">Política de privacidade</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Serviços</h3>
+        <ul>
+          <li><a href="#consorcio">Consórcio</a></li>
+          <li><a href="#consorcio">Financiamento</a></li>
+          <li><a href="#">Avaliação imobiliária</a></li>
+          <li><a href="#">Consultoria de investimento</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Redes sociais</h3>
+        <div class="socials">
+          <a href="#" aria-label="Instagram" title="Instagram">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5Zm10 2H7a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3Zm-5 3.5A4.5 4.5 0 1 1 7.5 12 4.5 4.5 0 0 1 12 7.5Zm0 2A2.5 2.5 0 1 0 14.5 12 2.5 2.5 0 0 0 12 9.5Zm4.75-3.35a1.1 1.1 0 1 1-1.1 1.1 1.1 1.1 0 0 1 1.1-1.1Z"/></svg>
+          </a>
+          <a href="#" aria-label="LinkedIn" title="LinkedIn">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.98 3.5A2.48 2.48 0 1 1 2.5 5.98 2.48 2.48 0 0 1 4.98 3.5ZM2.75 8.75h4.46v12.5H2.75Zm7.09 0h4.28v1.71h.06a4.69 4.69 0 0 1 4.22-2.32c4.52 0 5.35 2.97 5.35 6.84v6.27h-4.46v-5.56c0-1.33-.02-3.05-1.86-3.05s-2.15 1.46-2.15 2.95v5.66H9.84Z"/></svg>
+          </a>
+          <a href="#" aria-label="YouTube" title="YouTube">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M23.5 7.2a3 3 0 0 0-2.1-2.1C19.5 4.5 12 4.5 12 4.5s-7.5 0-9.4.6A3 3 0 0 0 .5 7.2 31.8 31.8 0 0 0 0 12a31.8 31.8 0 0 0 .5 4.8 3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1A31.8 31.8 0 0 0 24 12a31.8 31.8 0 0 0-.5-4.8ZM9.6 15.5v-7l6 3.5Z"/></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+    <div class="container footer-bottom">
+      <p>© <span id="currentYear"></span> Aurora Imóveis. Todos os direitos reservados.</p>
+    </div>
+  </footer>
+
+  <!--div class="modal" id="financeModal" role="dialog" aria-modal="true" aria-labelledby="financeTitle" hidden>
+    <div class="modal-content">
+      <button class="close-modal" id="closeFinanceModal" type="button" aria-label="Fechar modal">×</button>
+      <h3 id="financeTitle">Consultoria financeira Aurora</h3>
+      <p>Nosso time ajuda você a encontrar o melhor caminho entre consórcio, financiamento tradicional e uso de FGTS, com simulações personalizadas e suporte completo.</p>
+      <p>Atendimento de segunda a sábado, com retorno em até 30 minutos úteis.</p>
+      <a class="btn" href="https://wa.me/5511999999999" target="_blank" rel="noopener noreferrer">Quero uma simulação</a>
+    </div>
+  </div-->
+
+  <script src="./js/main.js"></script>
+</body>
+</html>
+
+<!--
+Personalização rápida:
+1) Dados de imóveis, lançamentos, métricas, regiões e depoimentos:
+   editar os arrays no arquivo ./js/main.js
+2) Cores, tipografia, espaçamentos e bordas:
+   ajustar variáveis CSS em :root no arquivo ./css/styles.css
+-->
