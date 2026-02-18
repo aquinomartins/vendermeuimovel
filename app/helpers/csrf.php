@@ -2,8 +2,14 @@
 
 declare(strict_types=1);
 
+require_once __DIR__ . '/esc.php';
+
 function csrf_token(): string
 {
+    if (session_status() !== PHP_SESSION_ACTIVE) {
+        session_start();
+    }
+
     if (empty($_SESSION['_csrf'])) {
         $_SESSION['_csrf'] = bin2hex(random_bytes(32));
     }
@@ -18,9 +24,13 @@ function csrf_field(): string
 
 function verify_csrf(): void
 {
+    if (session_status() !== PHP_SESSION_ACTIVE) {
+        session_start();
+    }
+
     $token = $_POST['_csrf'] ?? '';
     if (!is_string($token) || !hash_equals($_SESSION['_csrf'] ?? '', $token)) {
         http_response_code(419);
-        exit('Token CSRF inválido.');
+        exit('Token CSRF inválido');
     }
 }
