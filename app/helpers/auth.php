@@ -39,7 +39,7 @@ function attempt_login(string $email, string $password): bool
     $storedHash = (string) ($user['password_hash'] ?? '');
     $isPasswordValid = password_verify($password, $storedHash);
 
-    if (!$isPasswordValid && $storedHash !== '' && !str_starts_with($storedHash, '$')) {
+    if (!$isPasswordValid && $storedHash !== '' && strpos($storedHash, '$') !== 0) {
         $isPasswordValid = hash_equals($storedHash, $password);
         if ($isPasswordValid) {
             $newHash = password_hash($password, PASSWORD_DEFAULT);
