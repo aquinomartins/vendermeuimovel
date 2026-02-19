@@ -21,8 +21,13 @@ function attempt_login(string $email, string $password): bool
 {
     ensure_session_started();
 
-    $stmt = db()->prepare('SELECT id, name, email, password_hash, role FROM users WHERE email = :email LIMIT 1');
-    $stmt->execute(['email' => $email]);
+    $normalizedEmail = mb_strtolower(trim($email));
+    if ($normalizedEmail === '' || $password === '') {
+        return false;
+    }
+
+    $stmt = db()->prepare('SELECT id, name, email, password_hash, role FROM users WHERE LOWER(TRIM(email)) = :email LIMIT 1');
+    $stmt->execute(['email' => $normalizedEmail]);
     $user = $stmt->fetch();
 
     if (!$user || !password_verify($password, $user['password_hash'])) {
