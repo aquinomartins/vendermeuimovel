@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../app/helpers/auth.php';
 require_once __DIR__ . '/../app/helpers/csrf.php';
+require_once __DIR__ . '/../app/helpers/esc.php';
 require_once __DIR__ . '/../app/helpers/sanitize.php';
 require_once __DIR__ . '/../app/helpers/upload.php';
 require_once __DIR__ . '/../app/models/Settings.php';
