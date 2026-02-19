@@ -21,7 +21,9 @@ function attempt_login(string $email, string $password): bool
 {
     ensure_session_started();
 
-    $normalizedEmail = mb_strtolower(trim($email));
+    $normalizedEmail = function_exists('mb_strtolower')
+        ? mb_strtolower(trim($email))
+        : strtolower(trim($email));
     if ($normalizedEmail === '' || $password === '') {
         return false;
     }
@@ -30,7 +32,26 @@ function attempt_login(string $email, string $password): bool
     $stmt->execute(['email' => $normalizedEmail]);
     $user = $stmt->fetch();
 
-    if (!$user || !password_verify($password, $user['password_hash'])) {
+    if (!$user) {
+        return false;
+    }
+
+    $storedHash = (string) ($user['password_hash'] ?? '');
+    $isPasswordValid = password_verify($password, $storedHash);
+
+    if (!$isPasswordValid && $storedHash !== '' && !str_starts_with($storedHash, '$')) {
+        $isPasswordValid = hash_equals($storedHash, $password);
+        if ($isPasswordValid) {
+            $newHash = password_hash($password, PASSWORD_DEFAULT);
+            $updateStmt = db()->prepare('UPDATE users SET password_hash = :password_hash WHERE id = :id');
+            $updateStmt->execute([
+                'password_hash' => $newHash,
+                'id' => (int) $user['id'],
+            ]);
+        }
+    }
+
+    if (!$isPasswordValid) {
         return false;
     }
 
