@@ -40,6 +40,7 @@ php -S 0.0.0.0:8080 -t public
 ## Acesso Admin
 
 - URL: `/admin/login.php`
+- Com o servidor em `-t public`, o painel está disponível em `public/admin/*.php` (ex.: `http://localhost:8080/admin/login.php`).
 - Usuário padrão: `admin@aurora.local`
 - Senha padrão: `123456`
 
