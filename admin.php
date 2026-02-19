@@ -2,7 +2,97 @@
 
 declare(strict_types=1);
 
+session_start();
+
 require __DIR__ . '/content_manager.php';
+
+const ADMIN_USERNAME = 'admin';
+const ADMIN_PASSWORD = '123456';
+
+$isAuthenticated = ($_SESSION['admin_authenticated'] ?? false) === true;
+$message = null;
+$isLoginError = false;
+
+if (($_POST['action'] ?? '') === 'logout') {
+    $_SESSION = [];
+    if (ini_get('session.use_cookies')) {
+        $params = session_get_cookie_params();
+        setcookie(session_name(), '', time() - 42000, $params['path'], $params['domain'], $params['secure'], $params['httponly']);
+    }
+    session_destroy();
+    header('Location: admin.php');
+    exit;
+}
+
+if (!$isAuthenticated && ($_POST['action'] ?? '') === 'login') {
+    $username = trim((string) ($_POST['username'] ?? ''));
+    $password = (string) ($_POST['password'] ?? '');
+
+    if ($username === ADMIN_USERNAME && $password === ADMIN_PASSWORD) {
+        session_regenerate_id(true);
+        $_SESSION['admin_authenticated'] = true;
+        header('Location: admin.php');
+        exit;
+    }
+
+    $message = 'Usuário ou senha inválidos.';
+    $isLoginError = true;
+}
+
+$isAuthenticated = ($_SESSION['admin_authenticated'] ?? false) === true;
+
+if (!$isAuthenticated) {
+    ?>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Admin</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f3f4f6; margin: 0; padding: 20px; }
+        .container { max-width: 420px; margin: 60px auto; background: #fff; border-radius: 8px; padding: 24px; box-shadow: 0 3px 12px rgba(0,0,0,.08); }
+        h1 { margin-top: 0; margin-bottom: 8px; }
+        .hint { color: #4b5563; margin-bottom: 20px; }
+        .message { padding: 10px 12px; border-radius: 6px; margin-bottom: 16px; }
+        .message.error { background: #fee2e2; color: #991b1b; }
+        .field { margin-bottom: 16px; }
+        label { display:block; font-weight: bold; margin-bottom: 6px; }
+        input { width: 100%; border:1px solid #d1d5db; border-radius: 6px; padding: 10px; box-sizing: border-box; }
+        button { width:100%; background:#2563eb; color:#fff; border:0; padding:12px 20px; border-radius: 6px; cursor: pointer; }
+        button:hover { background:#1d4ed8; }
+        .credentials { margin-top: 14px; font-size: 12px; color: #6b7280; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Acesso Admin</h1>
+    <p class="hint">Entre com usuário e senha para acessar o painel.</p>
+
+    <?php if ($message !== null): ?>
+        <div class="message <?= $isLoginError ? 'error' : '' ?>"><?= htmlspecialchars($message, ENT_QUOTES, 'UTF-8') ?></div>
+    <?php endif; ?>
+
+    <form method="post">
+        <input type="hidden" name="action" value="login">
+        <div class="field">
+            <label for="username">Usuário</label>
+            <input id="username" type="text" name="username" required>
+        </div>
+        <div class="field">
+            <label for="password">Senha</label>
+            <input id="password" type="password" name="password" required>
+        </div>
+        <button type="submit">Entrar</button>
+    </form>
+
+    <p class="credentials">Credenciais padrão: <strong>admin</strong> / <strong>123456</strong></p>
+</div>
+</body>
+</html>
+<?php
+    exit;
+}
 
 $template = file_get_contents(getTemplatePath());
 if ($template === false) {
@@ -14,8 +104,6 @@ if ($template === false) {
 $defaults = extractEditableContent($template);
 $stored = loadStoredContent();
 $current = buildEffectiveContent($defaults, $stored);
-$message = null;
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $updated = [];
     foreach ($defaults as $key => $_meta) {
@@ -51,6 +139,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         button:hover { background:#1d4ed8; }
         .actions { display:flex; gap: 10px; align-items:center; margin-top: 20px; }
         a { color:#2563eb; text-decoration:none; }
+        .logout { background: #ef4444; }
+        .logout:hover { background: #dc2626; }
     </style>
 </head>
 <body>
@@ -76,6 +166,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="actions">
             <button type="submit">Salvar alterações</button>
             <a href="index.php" target="_blank" rel="noopener noreferrer">Abrir página inicial</a>
+            <button class="logout" type="submit" name="action" value="logout" formnovalidate>Sair</button>
         </div>
     </form>
 </div>
