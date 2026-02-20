@@ -8,7 +8,7 @@ final class HomeItems
 {
     public static function groups(): array
     {
-        return ['typeChips', 'metrics', 'readyCards', 'launchCards', 'regionChips', 'testimonials', 'pinsList', 'featuresList', 'footer_links'];
+        return ['typeChips', 'metrics', 'readyCards', 'launchCards', 'regionChips', 'testimonials', 'pinsList', 'footer_links'];
     }
 
     public static function all(?string $group = null): array
