@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-const EDITABLE_TEXT_TAGS = ['p', 'h1', 'h2', 'h3', 'h4', 'button', 'footer'];
+const EDITABLE_TEXT_TAGS = ['p', 'h1', 'h2', 'h3', 'h4', 'button', 'footer', 'li'];
 const EDITABLE_IMAGE_TAG = 'img';
 const ALLOWED_IMAGE_MIME_TYPES = [
     'image/jpeg' => 'jpg',
