@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 const EDITABLE_TEXT_TAGS = ['p', 'h1', 'h2', 'h3', 'h4'];
 const EDITABLE_IMAGE_TAG = 'img';
+const EDITABLE_LINK_TAG = 'a';
 const ALLOWED_IMAGE_MIME_TYPES = [
     'image/jpeg' => 'jpg',
     'image/png' => 'png',
@@ -43,7 +44,7 @@ function ensureUploadsDirExists(): bool
 }
 
 /**
- * @return array<string, array{tag:string,order:int,type:string,text?:string,src?:string}>
+ * @return array<string, array{tag:string,order:int,type:string,text?:string,src?:string,href?:string}>
  */
 function extractEditableContent(string $html): array
 {
@@ -53,11 +54,11 @@ function extractEditableContent(string $html): array
     libxml_clear_errors();
 
     $xpath = new DOMXPath($dom);
-    $query = '//' . implode('|//', EDITABLE_TEXT_TAGS) . '|//' . EDITABLE_IMAGE_TAG;
+    $query = '//' . implode('|//', EDITABLE_TEXT_TAGS) . '|//' . EDITABLE_IMAGE_TAG . '|//' . EDITABLE_LINK_TAG;
     $nodes = $xpath->query($query);
 
     $result = [];
-    $counters = array_fill_keys(array_merge(EDITABLE_TEXT_TAGS, [EDITABLE_IMAGE_TAG]), 0);
+    $counters = array_fill_keys(array_merge(EDITABLE_TEXT_TAGS, [EDITABLE_IMAGE_TAG, EDITABLE_LINK_TAG]), 0);
 
     if ($nodes !== false) {
         foreach ($nodes as $node) {
@@ -71,6 +72,17 @@ function extractEditableContent(string $html): array
                     'order' => $counters[$tag],
                     'type' => 'image',
                     'src' => trim((string) $node->getAttribute('src')),
+                ];
+                continue;
+            }
+
+            if ($tag === EDITABLE_LINK_TAG) {
+                $result[$key] = [
+                    'tag' => $tag,
+                    'order' => $counters[$tag],
+                    'type' => 'link',
+                    'href' => trim((string) $node->getAttribute('href')),
+                    'text' => trim($node->textContent ?? ''),
                 ];
                 continue;
             }
@@ -124,7 +136,7 @@ function saveStoredContent(array $content): bool
 }
 
 /**
- * @param array<string, array{tag:string,order:int,type:string,text?:string,src?:string}> $defaults
+ * @param array<string, array{tag:string,order:int,type:string,text?:string,src?:string,href?:string}> $defaults
  * @param array<string, string> $stored
  * @return array<string, string>
  */
@@ -132,11 +144,18 @@ function buildEffectiveContent(array $defaults, array $stored): array
 {
     $effective = [];
     foreach ($defaults as $key => $meta) {
-        $fallback = $meta['type'] === 'image'
-            ? (string) ($meta['src'] ?? '')
-            : (string) ($meta['text'] ?? '');
+        if ($meta['type'] === 'image') {
+            $effective[$key] = $stored[$key] ?? (string) ($meta['src'] ?? '');
+            continue;
+        }
 
-        $effective[$key] = $stored[$key] ?? $fallback;
+        if ($meta['type'] === 'link') {
+            $effective[$key . '__href'] = $stored[$key . '__href'] ?? (string) ($meta['href'] ?? '');
+            $effective[$key . '__text'] = $stored[$key . '__text'] ?? (string) ($meta['text'] ?? '');
+            continue;
+        }
+
+        $effective[$key] = $stored[$key] ?? (string) ($meta['text'] ?? '');
     }
 
     return $effective;
@@ -153,10 +172,10 @@ function renderTemplateWithContent(string $html, array $content): string
     libxml_clear_errors();
 
     $xpath = new DOMXPath($dom);
-    $query = '//' . implode('|//', EDITABLE_TEXT_TAGS) . '|//' . EDITABLE_IMAGE_TAG;
+    $query = '//' . implode('|//', EDITABLE_TEXT_TAGS) . '|//' . EDITABLE_IMAGE_TAG . '|//' . EDITABLE_LINK_TAG;
     $nodes = $xpath->query($query);
 
-    $counters = array_fill_keys(array_merge(EDITABLE_TEXT_TAGS, [EDITABLE_IMAGE_TAG]), 0);
+    $counters = array_fill_keys(array_merge(EDITABLE_TEXT_TAGS, [EDITABLE_IMAGE_TAG, EDITABLE_LINK_TAG]), 0);
 
     if ($nodes !== false) {
         foreach ($nodes as $node) {
@@ -169,6 +188,23 @@ function renderTemplateWithContent(string $html, array $content): string
 
             if ($tag === EDITABLE_IMAGE_TAG) {
                 $node->setAttribute('src', $content[$key]);
+                continue;
+            }
+
+            if ($tag === EDITABLE_LINK_TAG) {
+                $hrefKey = $key . '__href';
+                $textKey = $key . '__text';
+                if (array_key_exists($hrefKey, $content)) {
+                    $node->setAttribute('href', $content[$hrefKey]);
+                }
+
+                if (array_key_exists($textKey, $content)) {
+                    while ($node->firstChild !== null) {
+                        $node->removeChild($node->firstChild);
+                    }
+
+                    $node->appendChild($dom->createTextNode($content[$textKey]));
+                }
                 continue;
             }
 
