@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 const EDITABLE_TEXT_TAGS = ['p', 'h1', 'h2', 'h3', 'h4', 'button', 'footer'];
 const EDITABLE_IMAGE_TAG = 'img';
+const EDITABLE_LIST_ITEM_QUERY = "//li[contains(concat(' ', normalize-space(@class), ' '), ' editable-feature-item ')]";
 const ALLOWED_IMAGE_MIME_TYPES = [
     'image/jpeg' => 'jpg',
     'image/png' => 'png',
@@ -53,11 +54,11 @@ function extractEditableContent(string $html): array
     libxml_clear_errors();
 
     $xpath = new DOMXPath($dom);
-    $query = '//' . implode('|//', EDITABLE_TEXT_TAGS) . '|//' . EDITABLE_IMAGE_TAG;
+    $query = '//' . implode('|//', EDITABLE_TEXT_TAGS) . '|//' . EDITABLE_IMAGE_TAG . '|' . EDITABLE_LIST_ITEM_QUERY;
     $nodes = $xpath->query($query);
 
     $result = [];
-    $counters = array_fill_keys(array_merge(EDITABLE_TEXT_TAGS, [EDITABLE_IMAGE_TAG]), 0);
+    $counters = array_fill_keys(array_merge(EDITABLE_TEXT_TAGS, [EDITABLE_IMAGE_TAG, 'li']), 0);
 
     if ($nodes !== false) {
         foreach ($nodes as $node) {
@@ -153,10 +154,10 @@ function renderTemplateWithContent(string $html, array $content): string
     libxml_clear_errors();
 
     $xpath = new DOMXPath($dom);
-    $query = '//' . implode('|//', EDITABLE_TEXT_TAGS) . '|//' . EDITABLE_IMAGE_TAG;
+    $query = '//' . implode('|//', EDITABLE_TEXT_TAGS) . '|//' . EDITABLE_IMAGE_TAG . '|' . EDITABLE_LIST_ITEM_QUERY;
     $nodes = $xpath->query($query);
 
-    $counters = array_fill_keys(array_merge(EDITABLE_TEXT_TAGS, [EDITABLE_IMAGE_TAG]), 0);
+    $counters = array_fill_keys(array_merge(EDITABLE_TEXT_TAGS, [EDITABLE_IMAGE_TAG, 'li']), 0);
 
     if ($nodes !== false) {
         foreach ($nodes as $node) {
