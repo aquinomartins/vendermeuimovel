@@ -2,7 +2,15 @@
 
 declare(strict_types=1);
 
-const EDITABLE_TAGS = ['p', 'h1', 'h2', 'h3', 'h4'];
+const EDITABLE_TEXT_TAGS = ['p', 'h1', 'h2', 'h3', 'h4'];
+const EDITABLE_IMAGE_TAG = 'img';
+const ALLOWED_IMAGE_MIME_TYPES = [
+    'image/jpeg' => 'jpg',
+    'image/png' => 'png',
+    'image/gif' => 'gif',
+    'image/webp' => 'webp',
+    'image/svg+xml' => 'svg',
+];
 
 function getTemplatePath(): string
 {
@@ -14,8 +22,28 @@ function getContentStorePath(): string
     return __DIR__ . '/content_store.json';
 }
 
+function getUploadsDirPath(): string
+{
+    return __DIR__ . '/uploads';
+}
+
+function getUploadsPublicPath(): string
+{
+    return 'uploads';
+}
+
+function ensureUploadsDirExists(): bool
+{
+    $path = getUploadsDirPath();
+    if (is_dir($path)) {
+        return true;
+    }
+
+    return mkdir($path, 0775, true);
+}
+
 /**
- * @return array<string, array{tag:string,order:int,text:string}>
+ * @return array<string, array{tag:string,order:int,type:string,text?:string,src?:string}>
  */
 function extractEditableContent(string $html): array
 {
@@ -25,19 +53,32 @@ function extractEditableContent(string $html): array
     libxml_clear_errors();
 
     $xpath = new DOMXPath($dom);
-    $nodes = $xpath->query('//' . implode('|//', EDITABLE_TAGS));
+    $query = '//' . implode('|//', EDITABLE_TEXT_TAGS) . '|//' . EDITABLE_IMAGE_TAG;
+    $nodes = $xpath->query($query);
 
     $result = [];
-    $counters = array_fill_keys(EDITABLE_TAGS, 0);
+    $counters = array_fill_keys(array_merge(EDITABLE_TEXT_TAGS, [EDITABLE_IMAGE_TAG]), 0);
 
     if ($nodes !== false) {
         foreach ($nodes as $node) {
             $tag = strtolower($node->nodeName);
             $counters[$tag]++;
             $key = sprintf('%s_%d', $tag, $counters[$tag]);
+
+            if ($tag === EDITABLE_IMAGE_TAG) {
+                $result[$key] = [
+                    'tag' => $tag,
+                    'order' => $counters[$tag],
+                    'type' => 'image',
+                    'src' => trim((string) $node->getAttribute('src')),
+                ];
+                continue;
+            }
+
             $result[$key] = [
                 'tag' => $tag,
                 'order' => $counters[$tag],
+                'type' => 'text',
                 'text' => trim($node->textContent ?? ''),
             ];
         }
@@ -83,7 +124,7 @@ function saveStoredContent(array $content): bool
 }
 
 /**
- * @param array<string, array{tag:string,order:int,text:string}> $defaults
+ * @param array<string, array{tag:string,order:int,type:string,text?:string,src?:string}> $defaults
  * @param array<string, string> $stored
  * @return array<string, string>
  */
@@ -91,7 +132,11 @@ function buildEffectiveContent(array $defaults, array $stored): array
 {
     $effective = [];
     foreach ($defaults as $key => $meta) {
-        $effective[$key] = $stored[$key] ?? $meta['text'];
+        $fallback = $meta['type'] === 'image'
+            ? (string) ($meta['src'] ?? '')
+            : (string) ($meta['text'] ?? '');
+
+        $effective[$key] = $stored[$key] ?? $fallback;
     }
 
     return $effective;
@@ -108,9 +153,10 @@ function renderTemplateWithContent(string $html, array $content): string
     libxml_clear_errors();
 
     $xpath = new DOMXPath($dom);
-    $nodes = $xpath->query('//' . implode('|//', EDITABLE_TAGS));
+    $query = '//' . implode('|//', EDITABLE_TEXT_TAGS) . '|//' . EDITABLE_IMAGE_TAG;
+    $nodes = $xpath->query($query);
 
-    $counters = array_fill_keys(EDITABLE_TAGS, 0);
+    $counters = array_fill_keys(array_merge(EDITABLE_TEXT_TAGS, [EDITABLE_IMAGE_TAG]), 0);
 
     if ($nodes !== false) {
         foreach ($nodes as $node) {
@@ -118,6 +164,11 @@ function renderTemplateWithContent(string $html, array $content): string
             $counters[$tag]++;
             $key = sprintf('%s_%d', $tag, $counters[$tag]);
             if (!array_key_exists($key, $content)) {
+                continue;
+            }
+
+            if ($tag === EDITABLE_IMAGE_TAG) {
+                $node->setAttribute('src', $content[$key]);
                 continue;
             }
 
@@ -130,4 +181,40 @@ function renderTemplateWithContent(string $html, array $content): string
     }
 
     return $dom->saveHTML() ?: $html;
+}
+
+function handleImageUpload(array $file, string $fieldKey): ?string
+{
+    if (($file['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_NO_FILE) {
+        return null;
+    }
+
+    if (($file['error'] ?? UPLOAD_ERR_OK) !== UPLOAD_ERR_OK) {
+        return null;
+    }
+
+    $tmpName = (string) ($file['tmp_name'] ?? '');
+    if ($tmpName === '' || !is_uploaded_file($tmpName)) {
+        return null;
+    }
+
+    $mimeType = mime_content_type($tmpName) ?: '';
+    if (!array_key_exists($mimeType, ALLOWED_IMAGE_MIME_TYPES)) {
+        return null;
+    }
+
+    if (!ensureUploadsDirExists()) {
+        return null;
+    }
+
+    $extension = ALLOWED_IMAGE_MIME_TYPES[$mimeType];
+    $safeFieldKey = preg_replace('/[^a-zA-Z0-9_\-]/', '_', $fieldKey) ?: 'image';
+    $filename = sprintf('%s_%s.%s', $safeFieldKey, bin2hex(random_bytes(6)), $extension);
+    $destination = getUploadsDirPath() . '/' . $filename;
+
+    if (!move_uploaded_file($tmpName, $destination)) {
+        return null;
+    }
+
+    return getUploadsPublicPath() . '/' . $filename;
 }
