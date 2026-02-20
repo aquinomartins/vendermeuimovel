@@ -106,7 +106,15 @@ $stored = loadStoredContent();
 $current = buildEffectiveContent($defaults, $stored);
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $updated = [];
-    foreach ($defaults as $key => $_meta) {
+    foreach ($defaults as $key => $meta) {
+        if (($meta['type'] ?? 'text') === 'image') {
+            $uploadedPath = handleImageUpload($_FILES['upload_' . $key] ?? [], $key);
+            if ($uploadedPath !== null) {
+                $updated[$key] = $uploadedPath;
+                continue;
+            }
+        }
+
         $value = $_POST[$key] ?? ($current[$key] ?? '');
         $updated[$key] = trim((string) $value);
     }
@@ -135,6 +143,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         label { display:block; font-weight: bold; margin-bottom: 6px; }
         small { color: #6b7280; }
         textarea { width: 100%; min-height: 68px; border:1px solid #d1d5db; border-radius: 6px; padding: 10px; resize: vertical; box-sizing: border-box; }
+        input[type="text"], input[type="file"] { width: 100%; border:1px solid #d1d5db; border-radius: 6px; padding: 10px; box-sizing: border-box; margin-top: 6px; margin-bottom: 8px; }
         button { background:#2563eb; color:#fff; border:0; padding:12px 20px; border-radius: 6px; cursor: pointer; }
         button:hover { background:#1d4ed8; }
         .actions { display:flex; gap: 10px; align-items:center; margin-top: 20px; }
@@ -146,20 +155,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body>
 <div class="container">
     <h1>Painel Admin</h1>
-    <p class="hint">Edite os conteúdos das tags <code>&lt;p&gt;</code>, <code>&lt;h1&gt;</code>, <code>&lt;h2&gt;</code>, <code>&lt;h3&gt;</code>, <code>&lt;h4&gt;</code> da página inicial.</p>
+    <p class="hint">Edite os conteúdos das tags de texto e atualize os caminhos <code>src</code> das imagens da página inicial. Você também pode enviar um novo arquivo para cada <code>&lt;img&gt;</code>.</p>
 
     <?php if ($message !== null): ?>
         <div class="message"><?= htmlspecialchars($message, ENT_QUOTES, 'UTF-8') ?></div>
     <?php endif; ?>
 
-    <form method="post">
+    <form method="post" enctype="multipart/form-data">
         <?php foreach ($defaults as $key => $meta): ?>
             <div class="field">
                 <label for="<?= htmlspecialchars($key, ENT_QUOTES, 'UTF-8') ?>">
                     <?= strtoupper(htmlspecialchars($meta['tag'], ENT_QUOTES, 'UTF-8')) ?> #<?= (int) $meta['order'] ?>
                 </label>
-                <small>Original: <?= htmlspecialchars($meta['text'], ENT_QUOTES, 'UTF-8') ?></small>
-                <textarea id="<?= htmlspecialchars($key, ENT_QUOTES, 'UTF-8') ?>" name="<?= htmlspecialchars($key, ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($current[$key] ?? '', ENT_QUOTES, 'UTF-8') ?></textarea>
+
+                <?php if (($meta['type'] ?? 'text') === 'image'): ?>
+                    <small>Original src: <?= htmlspecialchars($meta['src'] ?? '', ENT_QUOTES, 'UTF-8') ?></small>
+                    <input id="<?= htmlspecialchars($key, ENT_QUOTES, 'UTF-8') ?>" type="text" name="<?= htmlspecialchars($key, ENT_QUOTES, 'UTF-8') ?>" value="<?= htmlspecialchars($current[$key] ?? '', ENT_QUOTES, 'UTF-8') ?>">
+                    <small>Enviar nova imagem (sobrescreve o src acima):</small>
+                    <input type="file" name="<?= htmlspecialchars('upload_' . $key, ENT_QUOTES, 'UTF-8') ?>" accept="image/*">
+                <?php else: ?>
+                    <small>Original: <?= htmlspecialchars($meta['text'] ?? '', ENT_QUOTES, 'UTF-8') ?></small>
+                    <textarea id="<?= htmlspecialchars($key, ENT_QUOTES, 'UTF-8') ?>" name="<?= htmlspecialchars($key, ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($current[$key] ?? '', ENT_QUOTES, 'UTF-8') ?></textarea>
+                <?php endif; ?>
             </div>
         <?php endforeach; ?>
 
