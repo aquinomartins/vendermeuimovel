@@ -6,7 +6,7 @@ require_once __DIR__ . '/../app/models/HomeItems.php';
 
 header('Content-Type: application/json; charset=utf-8');
 
-$groups = ['typeChips', 'metrics', 'readyCards', 'launchCards', 'regionChips', 'testimonials', 'pinsList'];
+$groups = ['typeChips', 'metrics', 'readyCards', 'launchCards', 'regionChips', 'testimonials', 'pinsList', 'featuresList'];
 $response = [];
 
 foreach ($groups as $group) {

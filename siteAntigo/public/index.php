@@ -41,6 +41,20 @@ $work = $sections['work_cta'] ?? ['title' => '', 'body' => '', 'button_label' =>
 <section class="finance" id="consorcio"><div class="container finance-card"><div><h2 class="section-title"><?= e($finance['title']) ?></h2><p><?= e($finance['body']) ?></p></div><button class="btn" id="openFinanceModal" type="button"><?= e($finance['button_label']) ?></button></div></section>
 <section class="dual-cta" id="venda"><div class="container dual-grid"><article class="cta-card"><img src="<?= e($sell['image_url'] ?: '/uploads/placeholders.svg') ?>" alt="Ilustração de venda de imóvel"><div><h2 class="section-title"><?= e($sell['title']) ?></h2><p><?= e($sell['body']) ?></p><a href="<?= e($sell['button_url']) ?>" class="btn"><?= e($sell['button_label']) ?></a></div></article><article class="cta-card" id="trabalhe"><img src="<?= e($work['image_url'] ?: '/uploads/placeholders.svg') ?>" alt="Ilustração de recrutamento imobiliário"><div><h2 class="section-title"><?= e($work['title']) ?></h2><p><?= e($work['body']) ?></p><a href="<?= e($work['button_url']) ?>" class="btn btn-secondary"><?= e($work['button_label']) ?></a></div></article></div></section>
 <section class="testimonials"><div class="container"><h2 class="section-title">Depoimentos de clientes</h2><div class="testimonial-grid" id="testimonialGrid"></div></div></section>
+<section class="features" aria-label="Diferenciais">
+  <div class="container">
+    <div class="col-md-4 col-sm-4">
+      <ul class="features-list" id="featuresList">
+        <li>Living inside a nature</li>
+        <li>Underground parking</li>
+        <li>Easy access for all</li>
+        <li>Non-stop security</li>
+        <li>Spacious Apartments</li>
+      </ul><!-- /.features-list -->
+    </div>
+  </div>
+</section>
+
 </main>
 <footer class="site-footer" id="contato"><div class="container footer-bottom"><p>© <span id="currentYear"></span> <?= e($brand) ?>. Todos os direitos reservados.</p></div></footer>
 <script src="/js/main.js"></script>

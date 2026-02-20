@@ -1,4 +1,4 @@
-let homeData = { typeChips: [], metrics: [], readyCards: [], launchCards: [], regionChips: [], testimonials: [], pinsList: [] };
+let homeData = { typeChips: [], metrics: [], readyCards: [], launchCards: [], regionChips: [], testimonials: [], pinsList: [], featuresList: [] };
 let selectedType = 'Todos';
 let selectedRegion = null;
 
@@ -14,6 +14,7 @@ const testimonialGrid = qs('#testimonialGrid');
 const selectedTypeText = qs('#selectedTypeText');
 const searchStatus = qs('#searchStatus');
 const pinsList = qs('#pinsList');
+const featuresList = qs('#featuresList');
 
 function formatMetric(metric) {
   const value = Number(metric.title || metric.text || 0);
@@ -70,6 +71,11 @@ function renderLaunches() {
 
 function renderTestimonials() {
   testimonialGrid.innerHTML = homeData.testimonials.map((item) => `<article class="testimonial"><p>“${item.text || ''}”</p><strong>${item.title || ''}</strong></article>`).join('');
+}
+
+function renderFeaturesList() {
+  if (!featuresList) return;
+  featuresList.innerHTML = homeData.featuresList.map((item) => `<li>${item.title || item.text || ''}</li>`).join('');
 }
 
 function bindUI() {
@@ -130,6 +136,7 @@ async function init() {
   renderReadyProperties();
   renderLaunches();
   renderTestimonials();
+  renderFeaturesList();
   selectedTypeText.textContent = `Tipo selecionado: ${selectedType}`;
   animateMetrics();
   bindUI();
