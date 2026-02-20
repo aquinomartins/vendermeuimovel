@@ -113,18 +113,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $updated[$key] = $uploadedPath;
                 continue;
             }
-
-            $value = $_POST[$key] ?? ($current[$key] ?? '');
-            $updated[$key] = trim((string) $value);
-            continue;
-        }
-
-        if (($meta['type'] ?? 'text') === 'link') {
-            $hrefValue = $_POST[$key . '__href'] ?? ($current[$key . '__href'] ?? '');
-            $textValue = $_POST[$key . '__text'] ?? ($current[$key . '__text'] ?? '');
-            $updated[$key . '__href'] = trim((string) $hrefValue);
-            $updated[$key . '__text'] = trim((string) $textValue);
-            continue;
         }
 
         $value = $_POST[$key] ?? ($current[$key] ?? '');
@@ -167,7 +155,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body>
 <div class="container">
     <h1>Painel Admin</h1>
-    <p class="hint">Edite os conteúdos das tags de texto, links (<code>&lt;a href&gt;</code> e texto interno) e atualize os caminhos <code>src</code> das imagens da página inicial. Você também pode enviar um novo arquivo para cada <code>&lt;img&gt;</code>.</p>
+    <p class="hint">Edite os conteúdos das tags de texto e atualize os caminhos <code>src</code> das imagens da página inicial. Você também pode enviar um novo arquivo para cada <code>&lt;img&gt;</code>.</p>
 
     <?php if ($message !== null): ?>
         <div class="message"><?= htmlspecialchars($message, ENT_QUOTES, 'UTF-8') ?></div>
@@ -185,11 +173,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <input id="<?= htmlspecialchars($key, ENT_QUOTES, 'UTF-8') ?>" type="text" name="<?= htmlspecialchars($key, ENT_QUOTES, 'UTF-8') ?>" value="<?= htmlspecialchars($current[$key] ?? '', ENT_QUOTES, 'UTF-8') ?>">
                     <small>Enviar nova imagem (sobrescreve o src acima):</small>
                     <input type="file" name="<?= htmlspecialchars('upload_' . $key, ENT_QUOTES, 'UTF-8') ?>" accept="image/*">
-                <?php elseif (($meta['type'] ?? 'text') === 'link'): ?>
-                    <small>Original href: <?= htmlspecialchars($meta['href'] ?? '', ENT_QUOTES, 'UTF-8') ?></small>
-                    <input id="<?= htmlspecialchars($key . '__href', ENT_QUOTES, 'UTF-8') ?>" type="text" name="<?= htmlspecialchars($key . '__href', ENT_QUOTES, 'UTF-8') ?>" value="<?= htmlspecialchars($current[$key . '__href'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
-                    <small>Texto original: <?= htmlspecialchars($meta['text'] ?? '', ENT_QUOTES, 'UTF-8') ?></small>
-                    <textarea id="<?= htmlspecialchars($key . '__text', ENT_QUOTES, 'UTF-8') ?>" name="<?= htmlspecialchars($key . '__text', ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($current[$key . '__text'] ?? '', ENT_QUOTES, 'UTF-8') ?></textarea>
                 <?php else: ?>
                     <small>Original: <?= htmlspecialchars($meta['text'] ?? '', ENT_QUOTES, 'UTF-8') ?></small>
                     <textarea id="<?= htmlspecialchars($key, ENT_QUOTES, 'UTF-8') ?>" name="<?= htmlspecialchars($key, ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($current[$key] ?? '', ENT_QUOTES, 'UTF-8') ?></textarea>
