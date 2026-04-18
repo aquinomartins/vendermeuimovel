@@ -71,7 +71,7 @@
     }
   }
   .feature-box { text-align: center; margin-bottom: 50px; }
-  .form-slider-wrapper { bottom: 0; position: relative; width: 100% !important; }
+  .form-slider-wrapper { display: none; }
   .has-count-down {
     .flexslider { //height: inherit !important;
       .slide {
