@@ -50,7 +50,10 @@ function extractEditableContent(string $html): array
 {
     $dom = new DOMDocument();
     libxml_use_internal_errors(true);
-    $dom->loadHTML($html, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+    $dom->loadHTML(
+        '<?xml encoding="UTF-8">' . normalizeToUtf8($html),
+        LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD
+    );
     libxml_clear_errors();
 
     $xpath = new DOMXPath($dom);
@@ -108,7 +111,12 @@ function loadStoredContent(): array
         return [];
     }
 
-    return array_filter($decoded, static fn ($value) => is_string($value));
+    $filtered = array_filter($decoded, static fn ($value) => is_string($value));
+
+    return array_map(
+        static fn (string $value): string => normalizeToUtf8($value),
+        $filtered
+    );
 }
 
 /**
@@ -116,6 +124,11 @@ function loadStoredContent(): array
  */
 function saveStoredContent(array $content): bool
 {
+    $content = array_map(
+        static fn (string $value): string => normalizeToUtf8($value),
+        $content
+    );
+
     $json = json_encode($content, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
     if ($json === false) {
         return false;
@@ -137,7 +150,7 @@ function buildEffectiveContent(array $defaults, array $stored): array
             ? (string) ($meta['src'] ?? '')
             : (string) ($meta['text'] ?? '');
 
-        $effective[$key] = $stored[$key] ?? $fallback;
+        $effective[$key] = normalizeStoredValue($stored[$key] ?? null, $fallback);
     }
 
     return $effective;
@@ -150,7 +163,10 @@ function renderTemplateWithContent(string $html, array $content): string
 {
     $dom = new DOMDocument();
     libxml_use_internal_errors(true);
-    $dom->loadHTML($html, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+    $dom->loadHTML(
+        '<?xml encoding="UTF-8">' . normalizeToUtf8($html),
+        LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD
+    );
     libxml_clear_errors();
 
     $xpath = new DOMXPath($dom);
@@ -177,11 +193,81 @@ function renderTemplateWithContent(string $html, array $content): string
                 $node->removeChild($node->firstChild);
             }
 
-            $node->appendChild($dom->createTextNode($content[$key]));
+            $node->appendChild($dom->createTextNode(normalizeToUtf8($content[$key])));
         }
     }
 
-    return $dom->saveHTML() ?: $html;
+    foreach ($dom->childNodes as $childNode) {
+        if (
+            $childNode->nodeType === XML_PI_NODE
+            && $childNode->nodeName === 'xml'
+        ) {
+            $dom->removeChild($childNode);
+            break;
+        }
+    }
+
+    return normalizeToUtf8($dom->saveHTML() ?: $html);
+}
+
+function normalizeToUtf8(string $value): string
+{
+    if ($value === '') {
+        return '';
+    }
+
+    if (function_exists('mb_detect_encoding') && function_exists('mb_convert_encoding')) {
+        $encoding = mb_detect_encoding($value, ['UTF-8', 'Windows-1252', 'ISO-8859-1'], true);
+        if ($encoding === false) {
+            return mb_convert_encoding($value, 'UTF-8', 'Windows-1252');
+        }
+
+        return mb_convert_encoding($value, 'UTF-8', $encoding);
+    }
+
+    if (preg_match('//u', $value) === 1) {
+        return $value;
+    }
+
+    if (function_exists('iconv')) {
+        $converted = iconv('Windows-1252', 'UTF-8//IGNORE', $value);
+        if (is_string($converted)) {
+            return $converted;
+        }
+    }
+
+    return utf8_encode($value);
+}
+
+function normalizeStoredValue(?string $storedValue, string $fallback): string
+{
+    if ($storedValue === null || $storedValue === '') {
+        return $fallback;
+    }
+
+    $normalized = normalizeToUtf8($storedValue);
+    $fallbackNormalized = normalizeToUtf8($fallback);
+
+    // Alguns ambientes persistem "�" já convertido para a sequência "ï¿½".
+    if (str_contains($normalized, 'ï¿½')) {
+        $normalized = str_replace('ï¿½', '�', $normalized);
+    }
+
+    // Quando já existe caractere de substituição, a informação original se perdeu.
+    // Nestes casos usamos o valor padrão do template para restaurar os acentos.
+    if (str_contains($normalized, '�') && !str_contains($fallbackNormalized, '�')) {
+        return $fallbackNormalized;
+    }
+
+    // Corrige padrão clássico de mojibake (ex.: "imÃ³vel").
+    if (preg_match('/Ã.|Â./u', $normalized) === 1) {
+        $repaired = normalizeToUtf8(utf8_decode($normalized));
+        if ($repaired !== '' && preg_match('/Ã.|Â./u', $repaired) !== 1) {
+            $normalized = $repaired;
+        }
+    }
+
+    return $normalized;
 }
 
 function handleImageUpload(array $file, string $fieldKey): ?string
