@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 require __DIR__ . '/content_manager.php';
 
+header('Content-Type: text/html; charset=UTF-8');
+
 $template = file_get_contents(getTemplatePath());
 if ($template === false) {
     http_response_code(500);

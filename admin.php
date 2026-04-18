@@ -6,6 +6,8 @@ session_start();
 
 require __DIR__ . '/content_manager.php';
 
+header('Content-Type: text/html; charset=UTF-8');
+
 const ADMIN_USERNAME = 'admin';
 const ADMIN_PASSWORD = '123456';
 
