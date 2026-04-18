@@ -5,7 +5,6 @@ declare(strict_types=1);
 const EDITABLE_TEXT_TAGS = ['p', 'h1', 'h2', 'h3', 'h4', 'button', 'footer'];
 const EDITABLE_IMAGE_TAG = 'img';
 const EDITABLE_LIST_ITEM_QUERY = "//li[contains(concat(' ', normalize-space(@class), ' '), ' editable-feature-item ')]";
-const EXCLUDED_EDITABLE_SECTION_IDS = ['slider'];
 const ALLOWED_IMAGE_MIME_TYPES = [
     'image/jpeg' => 'jpg',
     'image/png' => 'png',
@@ -44,25 +43,6 @@ function ensureUploadsDirExists(): bool
     return mkdir($path, 0775, true);
 }
 
-function buildEditableNodeQuery(): string
-{
-    $excludeConditions = array_map(
-        static fn (string $id): string => "not(ancestor::section[@id='{$id}'])",
-        EXCLUDED_EDITABLE_SECTION_IDS
-    );
-    $excludeClause = implode(' and ', $excludeConditions);
-
-    $textQueries = array_map(
-        static fn (string $tag): string => sprintf('//%s[%s]', $tag, $excludeClause),
-        EDITABLE_TEXT_TAGS
-    );
-
-    $imageQuery = sprintf('//%s[%s]', EDITABLE_IMAGE_TAG, $excludeClause);
-    $listItemQuery = sprintf('%s[%s]', EDITABLE_LIST_ITEM_QUERY, $excludeClause);
-
-    return implode('|', array_merge($textQueries, [$imageQuery, $listItemQuery]));
-}
-
 /**
  * @return array<string, array{tag:string,order:int,type:string,text?:string,src?:string}>
  */
@@ -74,7 +54,7 @@ function extractEditableContent(string $html): array
     libxml_clear_errors();
 
     $xpath = new DOMXPath($dom);
-    $query = buildEditableNodeQuery();
+    $query = '//' . implode('|//', EDITABLE_TEXT_TAGS) . '|//' . EDITABLE_IMAGE_TAG . '|' . EDITABLE_LIST_ITEM_QUERY;
     $nodes = $xpath->query($query);
 
     $result = [];
@@ -174,7 +154,7 @@ function renderTemplateWithContent(string $html, array $content): string
     libxml_clear_errors();
 
     $xpath = new DOMXPath($dom);
-    $query = buildEditableNodeQuery();
+    $query = '//' . implode('|//', EDITABLE_TEXT_TAGS) . '|//' . EDITABLE_IMAGE_TAG . '|' . EDITABLE_LIST_ITEM_QUERY;
     $nodes = $xpath->query($query);
 
     $counters = array_fill_keys(array_merge(EDITABLE_TEXT_TAGS, [EDITABLE_IMAGE_TAG, 'li']), 0);
