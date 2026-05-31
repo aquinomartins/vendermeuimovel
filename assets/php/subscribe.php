@@ -1,31 +1,35 @@
 <?php
-$name = $_POST['name'];
-$email = $_POST['email'];
-$phone = $_POST['phone'];
+$name = isset($_POST['name']) ? trim($_POST['name']) : '';
+$whatsapp = isset($_POST['email']) ? trim($_POST['email']) : '';
+$propertyType = isset($_POST['phone']) ? trim($_POST['phone']) : '';
+$propertyNeighborhood = isset($_POST['property_neighborhood']) ? trim($_POST['property_neighborhood']) : '';
 
 $to = 'hithemestarz@gmail.com';
-$subject = 'You Have new subscriber!';
+$subject = 'Nova solicitação de avaliação de imóvel';
 
 $body = "";
-$body .= "Name: ";
+$body .= "Nome: ";
 $body .= $name;
 $body .= "\n\n";
 
-$body .= "";
-$body .= "Email: ";
-$body .= $email;
+$body .= "WhatsApp: ";
+$body .= $whatsapp;
 $body .= "\n\n";
 
-$body .= "";
-$body .= "Phone no.: ";
-$body .= $phone;
+$body .= "Tipo de imóvel: ";
+$body .= $propertyType;
+$body .= "\n\n";
+
+$body .= "Bairro do imóvel: ";
+$body .= $propertyNeighborhood;
 $body .= "\n";
 
-$headers = 'From: ' .$email . "\r\n";
+$headers = 'From: noreply@vendermeuimovel.com.br' . "\r\n";
+$headers .= 'Reply-To: noreply@vendermeuimovel.com.br' . "\r\n";
 
-if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
-mail($to, $subject, $body, $headers);
-echo '<span id="valid">Thank you for your subscription! We will notice you as soon as possible</span>';
-}else{
-echo '<span id="invalid">Something gets wrong. Please try again.</span>';
+if ($name !== '' && $whatsapp !== '' && $propertyType !== '' && $propertyNeighborhood !== '') {
+    mail($to, $subject, $body, $headers);
+    echo '<span id="valid">Obrigado! Recebemos seus dados e entraremos em contato em breve.</span>';
+} else {
+    echo '<span id="invalid">Por favor, preencha todos os campos obrigatórios.</span>';
 }
