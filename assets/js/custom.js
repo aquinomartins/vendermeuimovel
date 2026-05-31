@@ -22,6 +22,14 @@ $(document).ready(function($) {
                 phone: {
                     required: true,
                     number: true
+                },
+                bairroImovel: {
+                    required: true
+                }
+            },
+            messages: {
+                bairroImovel: {
+                    required: "Por favor, selecione o bairro do imóvel."
                 }
             },
             submitHandler: function() {
