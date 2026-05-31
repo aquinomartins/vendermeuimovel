@@ -1074,12 +1074,27 @@ blockquote .cite footer {
   opacity: 0.2;
   margin: 20px 0;
 }
+.form-slider-wrapper .form-group {
+  margin-bottom: 12px;
+}
+.form-slider-wrapper label {
+  display: block;
+  margin-bottom: 6px;
+}
+.form-slider-wrapper .form-control {
+  width: 100%;
+  min-height: 44px;
+}
+.form-slider-wrapper select.form-control {
+  color: #363636;
+}
 .form-slider-wrapper .btn {
-  font-size: 18px;
-  margin-top: 10px;
-  padding: 15px;
+  font-size: 16px;
+  margin-top: 4px;
+  padding: 14px;
   width: 100%;
   position: relative;
+  white-space: normal;
 }
 .form-slider-wrapper figure {
   filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=60);
