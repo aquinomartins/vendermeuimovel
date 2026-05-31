@@ -2,7 +2,7 @@
 $name = $_POST['name'];
 $email = $_POST['email'];
 $phone = $_POST['phone'];
-$bairroImovel = isset($_POST['bairroImovel']) ? trim($_POST['bairroImovel']) : '';
+$neighborhood = isset($_POST['neighborhood']) ? trim($_POST['neighborhood']) : '';
 
 $to = 'hithemestarz@gmail.com';
 $subject = 'You Have new subscriber!';
@@ -23,12 +23,12 @@ $body .= $phone;
 $body .= "\n\n";
 
 $body .= "Bairro do Imóvel: ";
-$body .= $bairroImovel;
+$body .= $neighborhood;
 $body .= "\n";
 
 $headers = 'From: ' .$email . "\r\n";
 
-if ($bairroImovel === '') {
+if ($neighborhood === '') {
     echo '<span id="invalid">Por favor, selecione o bairro do imóvel.</span>';
     exit;
 }
