@@ -25,11 +25,7 @@
     &:after { display: none; }
   }
   hr { @include opacity(.2); margin: 20px 0; }
-  .form-group { margin-bottom: 12px; }
-  label { display: block; margin-bottom: 6px; }
-  .form-control { width: 100%; min-height: 44px; }
-  select.form-control { color: $color-grey-dark; }
-  .btn { font-size: 16px; margin-top: 4px; padding: 14px;  width: 100%; position: relative; white-space: normal; }
+  .btn { font-size: 18px; margin-top: 10px; padding: 15px;  width: 100%; position: relative; }
   figure { @include opacity(.6); }
 }
 
