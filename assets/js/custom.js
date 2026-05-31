@@ -20,8 +20,10 @@ $(document).ready(function($) {
         $("#form-slider").validate({
             rules: {
                 phone: {
-                    required: true,
-                    number: true
+                    required: true
+                },
+                property_neighborhood: {
+                    required: true
                 }
             },
             submitHandler: function() {
