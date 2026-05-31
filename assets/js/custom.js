@@ -19,9 +19,14 @@ $(document).ready(function($) {
     $("#form-slider-submit").bind("click", function(event){
         $("#form-slider").validate({
             rules: {
+                name: {
+                    required: true
+                },
+                email: {
+                    required: true
+                },
                 phone: {
-                    required: true,
-                    number: true
+                    required: true
                 },
                 bairroImovel: {
                     required: true
